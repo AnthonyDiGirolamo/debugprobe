@@ -26,10 +26,46 @@
 #ifndef CDC_UART_H
 #define CDC_UART_H
 
-void cdc_thread(void *ptr);
-void cdc_uart_init(void);
-bool cdc_task(void);
+#include <hardware/uart.h>
 
-extern TaskHandle_t uart_taskhandle;
+#include "FreeRTOS.h"
+#include "probe_config.h"
+#include "task.h"
+
+typedef struct {
+  uart_inst_t* instance;
+  uint baudrate;
+  uint8_t usb_interface;
+  uint tx_pin;
+  uint rx_pin;
+
+  // negative values of the below pins indicate that they are disabled.
+  int rx_led_pin;
+  int tx_led_pin;
+  int cts_pin;
+  int rts_pin;
+  int dtr_pin;
+} cdc_uart_config_t;
+
+typedef struct {
+  const cdc_uart_config_t* config;
+  TaskHandle_t uart_taskhandle;
+  TickType_t last_wake, interval;  // move to init = 100;
+  volatile TickType_t break_expiry;
+  volatile bool timed_break;
+
+  /* Max 1 FIFO worth of data */
+  uint8_t tx_buf[32];
+  uint8_t rx_buf[32];
+
+  uint debounce_ticks;  // move to init = 5;
+
+  volatile uint tx_led_debounce;
+  uint rx_led_debounce;
+} cdc_uart_t;
+
+void cdc_uart_init(cdc_uart_t* cdc, const cdc_uart_config_t* config);
+void cdc_thread(void* ptr);
+bool cdc_task(cdc_uart_t* cdc);
 
 #endif

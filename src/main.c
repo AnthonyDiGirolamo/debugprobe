@@ -83,13 +83,28 @@ void usb_thread(void *ptr)
 #define tud_vendor_flush(x) ((void)0)
 #endif
 
+static const cdc_uart_config_t uart0_config = {
+    .instance = uart1,
+    .baudrate = 115200,
+    .usb_interface = 0,
+    .tx_pin = 4,
+    .rx_pin = 5,
+    .rx_led_pin = 20,
+    .tx_led_pin = 21,
+    .cts_pin = -1,
+    .rts_pin = -1,
+    .dtr_pin = -1,
+};
+
+static cdc_uart_t cdc_uart_0;
+
 int main(void) {
     // Declare pins in binary information
     bi_decl_config();
 
     board_init();
     usb_serial_init();
-    cdc_uart_init();
+    cdc_uart_init(&cdc_uart_0, &uart0_config);
     tusb_init();
     stdio_uart_init();
 
@@ -101,7 +116,12 @@ int main(void) {
 
     if (THREADED) {
         /* UART needs to preempt USB as if we don't, characters get lost */
-        xTaskCreate(cdc_thread, "UART", configMINIMAL_STACK_SIZE, NULL, UART_TASK_PRIO, &uart_taskhandle);
+        xTaskCreate(cdc_thread,
+                    "UART",
+                    configMINIMAL_STACK_SIZE,
+                    &cdc_uart_0,
+                    UART_TASK_PRIO,
+                    &cdc_uart_0.uart_taskhandle);
         xTaskCreate(usb_thread, "TUD", configMINIMAL_STACK_SIZE, NULL, TUD_TASK_PRIO, &tud_taskhandle);
         /* Lowest priority thread is debug - need to shuffle buffers before we can toggle swd... */
         xTaskCreate(dap_thread, "DAP", configMINIMAL_STACK_SIZE, NULL, DAP_TASK_PRIO, &dap_taskhandle);
@@ -110,7 +130,7 @@ int main(void) {
 
     while (!THREADED) {
         tud_task();
-        cdc_task();
+        cdc_task(&cdc_uart_0);
 
 #if (PROBE_DEBUG_PROTOCOL == PROTO_DAP_V2)
         if (tud_vendor_available()) {
