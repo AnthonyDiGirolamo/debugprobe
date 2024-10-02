@@ -66,11 +66,12 @@ uint8_t const * tud_descriptor_device_cb(void)
 // Configuration Descriptor
 //--------------------------------------------------------------------+
 
-enum
-{
-  ITF_NUM_PROBE, // Old versions of Keil MDK only look at interface 0
+enum {
+  ITF_NUM_PROBE,  // Old versions of Keil MDK only look at interface 0
   ITF_NUM_CDC_COM,
   ITF_NUM_CDC_DATA,
+  ITF_NUM_CDC1_COM,
+  ITF_NUM_CDC1_DATA,
   ITF_NUM_TOTAL
 };
 
@@ -79,11 +80,16 @@ enum
 #define CDC_DATA_IN_EP_NUM 0x83
 #define DAP_OUT_EP_NUM 0x04
 #define DAP_IN_EP_NUM 0x85
+#define CDC1_NOTIFICATION_EP_NUM 0x86
+#define CDC1_DATA_OUT_EP_NUM 0x07
+#define CDC1_DATA_IN_EP_NUM 0x88
 
 #if (PROBE_DEBUG_PROTOCOL == PROTO_DAP_V1)
-#define CONFIG_TOTAL_LEN  (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_HID_INOUT_DESC_LEN)
+#define CONFIG_TOTAL_LEN \
+  (TUD_CONFIG_DESC_LEN + 2 * TUD_CDC_DESC_LEN + TUD_HID_INOUT_DESC_LEN)
 #else
-#define CONFIG_TOTAL_LEN  (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_VENDOR_DESC_LEN)
+#define CONFIG_TOTAL_LEN \
+  (TUD_CONFIG_DESC_LEN + 2 * TUD_CDC_DESC_LEN + TUD_VENDOR_DESC_LEN)
 #endif
 
 static uint8_t const desc_hid_report[] =
@@ -97,22 +103,41 @@ uint8_t const * tud_hid_descriptor_report_cb(uint8_t itf)
   return desc_hid_report;
 }
 
-uint8_t desc_configuration[] =
-{
-  TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0, 100),
-  // Interface 0
+uint8_t desc_configuration[] = {
+    TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0, 100),
+// Interface 0
 #if (PROBE_DEBUG_PROTOCOL == PROTO_DAP_V1)
-  // HID (named interface)
-  TUD_HID_INOUT_DESCRIPTOR(ITF_NUM_PROBE, 4, HID_ITF_PROTOCOL_NONE, sizeof(desc_hid_report), DAP_OUT_EP_NUM, DAP_IN_EP_NUM, CFG_TUD_HID_EP_BUFSIZE, 1),
+    // HID (named interface)
+    TUD_HID_INOUT_DESCRIPTOR(ITF_NUM_PROBE,
+                             4,
+                             HID_ITF_PROTOCOL_NONE,
+                             sizeof(desc_hid_report),
+                             DAP_OUT_EP_NUM,
+                             DAP_IN_EP_NUM,
+                             CFG_TUD_HID_EP_BUFSIZE,
+                             1),
 #elif (PROBE_DEBUG_PROTOCOL == PROTO_DAP_V2)
-  // Bulk (named interface)
-  TUD_VENDOR_DESCRIPTOR(ITF_NUM_PROBE, 5, DAP_OUT_EP_NUM, DAP_IN_EP_NUM, 64),
+    // Bulk (named interface)
+    TUD_VENDOR_DESCRIPTOR(ITF_NUM_PROBE, 5, DAP_OUT_EP_NUM, DAP_IN_EP_NUM, 64),
 #elif (PROBE_DEBUG_PROTOCOL == PROTO_OPENOCD_CUSTOM)
-  // Bulk
-  TUD_VENDOR_DESCRIPTOR(ITF_NUM_PROBE, 0, DAP_OUT_EP_NUM, DAP_IN_EP_NUM, 64),
+    // Bulk
+    TUD_VENDOR_DESCRIPTOR(ITF_NUM_PROBE, 0, DAP_OUT_EP_NUM, DAP_IN_EP_NUM, 64),
 #endif
-  // Interface 1 + 2
-  TUD_CDC_DESCRIPTOR(ITF_NUM_CDC_COM, 6, CDC_NOTIFICATION_EP_NUM, 64, CDC_DATA_OUT_EP_NUM, CDC_DATA_IN_EP_NUM, 64),
+    // Interface 1 + 2
+    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC_COM,
+                       6,
+                       CDC_NOTIFICATION_EP_NUM,
+                       64,
+                       CDC_DATA_OUT_EP_NUM,
+                       CDC_DATA_IN_EP_NUM,
+                       64),
+    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC1_COM,
+                       6,
+                       CDC1_NOTIFICATION_EP_NUM,
+                       64,
+                       CDC1_DATA_OUT_EP_NUM,
+                       CDC1_DATA_IN_EP_NUM,
+                       64),
 };
 
 // Invoked when received GET CONFIGURATION DESCRIPTOR
@@ -122,7 +147,10 @@ uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
 {
   (void) index; // for multiple configurations
   /* Hack in CAP_BREAK support */
-  desc_configuration[CONFIG_TOTAL_LEN - TUD_CDC_DESC_LEN + 8 + 9 + 5 + 5 + 4 - 1] = 0x6;
+  desc_configuration[CONFIG_TOTAL_LEN - TUD_CDC_DESC_LEN + 8 + 9 + 5 + 5 + 4 -
+                     1] = 0x6;
+  desc_configuration[CONFIG_TOTAL_LEN - 2 * TUD_CDC_DESC_LEN + 8 + 9 + 5 + 5 +
+                     4 - 1] = 0x6;
   return desc_configuration;
 }
 

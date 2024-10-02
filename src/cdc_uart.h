@@ -62,6 +62,9 @@ typedef struct {
 
   volatile uint tx_led_debounce;
   uint rx_led_debounce;
+
+  int was_connected;
+  uint cdc_tx_oe;
 } cdc_uart_t;
 
 void cdc_uart_init(cdc_uart_t* cdc, const cdc_uart_config_t* config);

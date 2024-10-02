@@ -105,8 +105,6 @@ void cdc_debounce_tx_led(cdc_uart_t* cdc) {
 }
 
 bool cdc_task(cdc_uart_t* cdc) {
-  static int was_connected = 0;
-  static uint cdc_tx_oe = 0;
   uint rx_len = 0;
   bool keep_alive = false;
 
@@ -119,7 +117,7 @@ bool cdc_task(cdc_uart_t* cdc) {
   }
 
   if (tud_cdc_n_connected(itf)) {
-    was_connected = 1;
+    cdc->was_connected = 1;
     int written = 0;
     /* Implicit overflow if we don't write all the bytes to the host.
      * Also throw away bytes if we can't write... */
@@ -127,7 +125,7 @@ bool cdc_task(cdc_uart_t* cdc) {
       cdc_activate_rx_led(cdc);
       written = MIN(tud_cdc_n_write_available(itf), rx_len);
       if (rx_len > written)
-        cdc_tx_oe++;
+        cdc->cdc_tx_oe++;
 
       if (written > 0) {
         tud_cdc_n_write(itf, cdc->rx_buf, written);
@@ -137,7 +135,7 @@ bool cdc_task(cdc_uart_t* cdc) {
       cdc_debounce_rx_led(cdc);
     }
 
-      /* Reading from a firehose and writing to a FIFO. */
+    /* Reading from a firehose and writing to a FIFO. */
     size_t watermark = MIN(tud_cdc_n_available(itf), sizeof(cdc->tx_buf));
     if (watermark > 0) {
       size_t tx_len;
@@ -160,13 +158,13 @@ bool cdc_task(cdc_uart_t* cdc) {
         keep_alive = true;
       }
     }
-  } else if (was_connected) {
+  } else if (cdc->was_connected) {
     tud_cdc_n_write_clear(itf);
     uart_set_break(uart, false);
     cdc->timed_break = false;
-    was_connected = 0;
+    cdc->was_connected = 0;
     cdc->tx_led_debounce = 0;
-    cdc_tx_oe = 0;
+    cdc->cdc_tx_oe = 0;
   }
     return keep_alive;
 }

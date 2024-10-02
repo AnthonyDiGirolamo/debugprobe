@@ -72,6 +72,9 @@ target_link_libraries(debugprobe PRIVATE
         FreeRTOS-Kernel-Heap1
 )
 
+pico_enable_stdio_rtt(debugprobe 1)
+pico_enable_stdio_uart(debugprobe 0)
+
 pico_set_binary_type(debugprobe copy_to_ram)
 
 pico_add_extra_outputs(debugprobe)
