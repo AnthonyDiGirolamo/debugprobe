@@ -84,26 +84,26 @@ void usb_thread(void *ptr)
 #endif
 
 static const cdc_uart_config_t uart0_config = {
-    .instance = uart1,
-    .baudrate = 115200,
+    .instance = PROBE_UART_INTERFACE,
+    .baudrate = PROBE_UART_BAUDRATE,
     .usb_interface = 1,
-    .tx_pin = 4,
-    .rx_pin = 5,
-    .rx_led_pin = 20,
-    .tx_led_pin = 21,
+    .tx_pin = PROBE_UART_TX,
+    .rx_pin = PROBE_UART_RX,
+    .rx_led_pin = PROBE_UART_RX_LED,
+    .tx_led_pin = PROBE_UART_TX_LED,
     .cts_pin = -1,
     .rts_pin = -1,
     .dtr_pin = -1,
 };
 
 static const cdc_uart_config_t uart1_config = {
-    .instance = uart0,
-    .baudrate = 115200,
+    .instance = PROBE_UART1_INTERFACE,
+    .baudrate = PROBE_UART1_BAUDRATE,
     .usb_interface = 0,
-    .tx_pin = 12,
-    .rx_pin = 13,
-    .rx_led_pin = -1,
-    .tx_led_pin = -1,
+    .tx_pin = PROBE_UART1_TX,
+    .rx_pin = PROBE_UART1_RX,
+    .rx_led_pin = PROBE_UART1_RX_LED,
+    .tx_led_pin = PROBE_UART1_TX_LED,
     .cts_pin = -1,
     .rts_pin = -1,
     .dtr_pin = -1,

@@ -26,6 +26,22 @@
 #ifndef LED_H
 #define LED_H
 
+#ifndef PROBE_UART_RX_LED
+#define PROBE_UART_RX_LED -1
+#endif
+
+#ifndef PROBE_UART_TX_LED
+#define PROBE_UART_TX_LED -1
+#endif
+
+#ifndef PROBE_UART1_RX_LED
+#define PROBE_UART1_RX_LED -1
+#endif
+
+#ifndef PROBE_UART1_TX_LED
+#define PROBE_UART1_TX_LED -1
+#endif
+
 void led_init(void);
 
 #endif

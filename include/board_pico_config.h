@@ -42,13 +42,20 @@
 #define PROBE_UART_RX 5
 #define PROBE_UART_INTERFACE uart1
 #define PROBE_UART_BAUDRATE 115200
+#define PROBE_UART_RX_LED 6
+#define PROBE_UART_TX_LED 8
+
+#define PROBE_UART1_TX 12
+#define PROBE_UART1_RX 13
+#define PROBE_UART1_INTERFACE uart0
+#define PROBE_UART1_BAUDRATE 115200
+#define PROBE_UART1_RX_LED -1
+#define PROBE_UART1_TX_LED -1
 
 /* LED config - some or all of these can be omitted if not used */
 #define PROBE_USB_CONNECTED_LED 17
 #define PROBE_DAP_CONNECTED_LED 18
 #define PROBE_DAP_RUNNING_LED 19
-#define PROBE_UART_RX_LED 20
-#define PROBE_UART_TX_LED 21
 
 #define PROBE_PRODUCT_STRING "Picopico Debug Probe(CMSIS-DAP)"
 

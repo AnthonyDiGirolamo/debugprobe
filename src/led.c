@@ -49,4 +49,12 @@ void led_init(void) {
     gpio_init(PROBE_UART_TX_LED);
     gpio_set_dir(PROBE_UART_TX_LED, GPIO_OUT);
 #endif
+#ifdef PROBE_UART1_RX_LED
+    gpio_init(PROBE_UART1_RX_LED);
+    gpio_set_dir(PROBE_UART1_RX_LED, GPIO_OUT);
+#endif
+#ifdef PROBE_UART1_TX_LED
+    gpio_init(PROBE_UART1_TX_LED);
+    gpio_set_dir(PROBE_UART1_TX_LED, GPIO_OUT);
+#endif
 }
